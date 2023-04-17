@@ -35,7 +35,7 @@ func TestHealthCheckHandler(t *testing.T) {
 			status, http.StatusOK)
 	}
 
-	want := `{"status": "available", "environment": %q, "version": %q}`
+	want := `{"status":"available","environment":%q,"version":%q}`
 	want = fmt.Sprintf(want, app.config.env, version)
 
 	if got := strings.TrimSpace(rr.Body.String()); got != want {

@@ -1,19 +1,35 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 )
+
+type healthcheck struct {
+	Status      string `json:"status"`
+	Environment string `json:"environment"`
+	Version     string `json:"version"`
+}
 
 // Declare a handler which writes a plain-text response with information about the
 // application status, operating environment and version.
 func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
-	// Create a fixed-format JSON response from a string. Notice how we're using a raw
-	// string literal (enclosed with backticks) so that we can include double-quote
-	// characters in the JSON without needing to escape them? We also use the %q verb to
-	// wrap the interpolated values in double-quotes.
-	js := `{"status": "available", "environment": %q, "version": %q}`
-	js = fmt.Sprintf(js, app.config.env, version)
+	h := healthcheck{
+		Status:      "available",
+		Environment: app.config.env,
+		Version:     version,
+	}
+
+	// Pass the struct to the json.Marshal() function. This returns a []byte slice
+	// containing the encoded JSON. If there was an error, we log it and send the client
+	// a generic error message.
+	js, err := json.Marshal(h)
+	if err != nil {
+		app.logger.Println(err)
+		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
+
+		return
+	}
 
 	// Set the "Content-Type: application/json" header on the response. If you forget to
 	// this, Go will default to sending a "Content-Type: text/plain; charset=utf-8"
@@ -23,7 +39,7 @@ func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Reques
 	// Write the JSON as the HTTP response body.
 	// What do we do if there is an error? log it.
 	// See https://stackoverflow.com/a/43976633/2180697 for more info.
-	if _, err := w.Write([]byte(js)); err != nil {
+	if _, err := w.Write(js); err != nil {
 		app.logger.Println("an error occurred writing response: %w", err)
 	}
 }
