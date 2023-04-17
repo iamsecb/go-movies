@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -31,4 +32,38 @@ func (app *application) readIDParam(r *http.Request) (int64, error) {
 	}
 
 	return id, nil
+}
+
+// Define a writeJSON() helper for sending responses. This takes the destination
+// http.ResponseWriter, the HTTP status code to send, the data to encode to JSON, and a
+// header map containing any additional HTTP headers we want to include in the response.
+func (app *application) writeJSON(w http.ResponseWriter, status int, data any, headers http.Header) error {
+	js, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("writeJSON: an error occurred marshaling json: %w", err)
+	}
+
+	// At this point, we know that we won't encounter any more errors before writing the
+	// response, so it's safe to add any headers that we want to include. We loop
+	// through the header map and add each header to the http.ResponseWriter header map.
+	// Note that it's OK if the provided header map is nil. Go doesn't throw an error
+	// if you try to range over (or generally, read from) a nil map.
+	for k, v := range headers {
+		w.Header()[k] = v
+	}
+
+	// Set the "Content-Type: application/json" header on the response. If you forget to
+	// this, Go will default to sending a "Content-Type: text/plain; charset=utf-8"
+	// header instead.
+	w.Header().Set("Content-Type", "application/json")
+
+	w.WriteHeader(status)
+	// Write the JSON as the HTTP response body.
+	// See following link for why it might be beneficial to log the error.
+	// https://stackoverflow.com/a/43976633/2180697
+	if _, err := w.Write(js); err != nil {
+		app.logger.Println("an error occurred writing response: %w", err)
+	}
+
+	return nil
 }
