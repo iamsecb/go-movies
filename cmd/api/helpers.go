@@ -130,7 +130,7 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 	// return an io.EOF error. So if we get anything else, we know that there is
 	// additional data in the request body and we return our own custom error message.
 	err = dec.Decode(&struct{}{})
-	if errors.Is(err, io.EOF) {
+	if !errors.Is(err, io.EOF) {
 		return errTooManyJSONValues
 	}
 
