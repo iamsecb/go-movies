@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -36,7 +35,7 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 	// implementation.
 	// You can also run into a range of issues like the level of details might be insufficient,
 	// inconsistent language etc. so the errors should be triaged.
-	err := json.NewDecoder(r.Body).Decode(&input)
+	err := app.readJSON(w, r, &input)
 	if err != nil {
 		app.errorResponse(w, r, http.StatusBadRequest, err.Error())
 
