@@ -51,10 +51,8 @@ linters-settings:
       - m map[string]int
   ireturn:
     allow:
-      - "Error"
       - "error"
       - "Context"
-      - "Cred"
   funlen:
     lines: 120
     statements: 60
@@ -173,9 +171,6 @@ linters:
   # Default: false
   fast: true
 run:
-  # Temporarily disabled until we can address all the linter findings
-  # "pkg/osdb" has not been linted from the very beginning. Needs a closer look
-  # before fixing lint errors.
   skip-dirs:
   skip-files:
     - "^*.*_test.go"
