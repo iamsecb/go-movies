@@ -22,13 +22,12 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 	// If ID is invalid so we use the http.NotFound() function to return a 404 Not Found response.
 	id, err := app.readIDParam(r)
 	if err != nil {
-		http.NotFound(w, r)
+		app.errNotFoundResponse(w, r)
 
 		return
 	}
 
 	// TO-DO: Get movie.
-	// fmt.Fprintf(w, "show details of movie %d\n", id)
 	m := data.Movie{
 		ID:        id,
 		CreatedAt: time.Now(),
@@ -38,9 +37,6 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	if err := app.writeJSON(w, http.StatusOK, &m, nil); err != nil {
-		app.logger.Println(err)
-
-		http.Error(w, "The server encountered a problem and could not process your request",
-			http.StatusInternalServerError)
+		app.errServerResponse(w, r, err)
 	}
 }

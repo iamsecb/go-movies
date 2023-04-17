@@ -9,6 +9,10 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// Define an envelope type to wrap JSON messages if needed. This is useful when returning errors
+// with custom messages.
+type envelope map[string]any
+
 // readIDParam gets the id query parameter value of a request.
 //
 // Developer note:
