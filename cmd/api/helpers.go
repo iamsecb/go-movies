@@ -64,6 +64,8 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 			unmarshalTypeError *json.UnmarshalTypeError
 			// The decode destination is not valid (usually because it is not a pointer).
 			invalidUnmarshalError *json.InvalidUnmarshalError
+			// Add a new maxBytesError variable.
+			maxBytesError *http.MaxBytesError
 		)
 
 		switch {
@@ -117,6 +119,13 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 		// appropriate thing to do in this specific situation.
 		case errors.As(err, &invalidUnmarshalError):
 			panic(err)
+
+		// Use the errors.As() function to check whether the error has the type
+		// *http.MaxBytesError. If it does, then it means the request body exceeded our
+		// size limit of 1MB and we return a clear error message.
+		case errors.As(err, &maxBytesError):
+			//nolint:goerr113 // Dynamic error is needed
+			return fmt.Errorf("body must not be larger than %d bytes", maxBytesError.Limit)
 
 		// For anything else, return the error message as-is.
 		default:
