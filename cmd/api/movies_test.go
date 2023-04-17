@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -31,6 +33,13 @@ func TestHealthCheckHandler(t *testing.T) {
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
+	}
+
+	want := `{"status": "available", "environment": %q, "version": %q}`
+	want = fmt.Sprintf(want, app.config.env, version)
+
+	if got := strings.TrimSpace(rr.Body.String()); got != want {
+		t.Errorf("handler returned wrong response: got %v want %v", got, want)
 	}
 }
 
