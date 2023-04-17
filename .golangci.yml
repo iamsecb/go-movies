@@ -1,7 +1,4 @@
 linters-settings:
-  gomnd:
-    ignored-functions:
-      - "strconv.ParseInt"
   varnamelen:
     # The longest distance, in source lines, that is being considered a "small scope".
     # Variables used in at most this many lines will be ignored.
@@ -75,9 +72,11 @@ linters-settings:
 linters:
   # Disable all linters.
   # Default: false
-  disable-all: true
+  # disable-all: true
   # Enable specific linter
   # https://golangci-lint.run/usage/linters/#enabled-by-default-linters
+  disable:
+    - gomnd
   enable:
     - asciicheck
     - bidichk
@@ -110,7 +109,6 @@ linters:
     - gofmt
     - goheader
     - goimports
-    - gomnd
     - gomoddirectives
     - gomodguard
     - goprintffuncname
