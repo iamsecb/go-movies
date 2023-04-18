@@ -44,67 +44,78 @@ func TestHealthCheckHandler(t *testing.T) {
 }
 
 func TestCreateMovieHandler(t *testing.T) {
-	// Create a request to pass to our handler.
-	req, err := http.NewRequest(http.MethodPost, "/api/v1/movies", nil)
-	if err != nil {
-		t.Fatal(err)
+	testData := []struct {
+		name               string
+		expectedStatusCode int
+		body               string
+	}{
+		{name: "success",
+			body: `{
+			"title":"Moana",
+			"year":2016,
+			"runtime":"107 mins",
+			"genres":["animation","adventure"]
+		   }
+		   `,
+			expectedStatusCode: 200,
+		},
 	}
 
-	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
-	rr := httptest.NewRecorder()
+	for _, td := range testData {
+		t.Run(td.name, func(t *testing.T) {
+			// Create a request to pass to our handler.
+			req, err := http.NewRequest(http.MethodPost, "/api/v1/movies", strings.NewReader(td.body))
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
-	// directly and pass in our Request and ResponseRecorder.
-	handler.ServeHTTP(rr, req)
+			// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+			rr := httptest.NewRecorder()
 
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
+			// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
+			// directly and pass in our Request and ResponseRecorder.
+			handler.ServeHTTP(rr, req)
+
+			// Check the status code is what we expect.
+			if status := rr.Code; status != td.expectedStatusCode {
+				t.Errorf("handler returned wrong status code: got %v want %v",
+					status, td.expectedStatusCode)
+			}
+		})
 	}
 }
 
 func TestShowMovieHandler(t *testing.T) {
-	t.Run("valid_id", func(t *testing.T) {
-		// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
-		// pass 'nil' as the third parameter.
-		req, err := http.NewRequest(http.MethodGet, "/api/v1/movies/1", nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+	testData := []struct {
+		name               string
+		id                 string
+		expectedStatusCode int
+	}{
+		{name: "valid", id: "1", expectedStatusCode: 200},
+		{name: "invalid", id: "blah", expectedStatusCode: 404},
+	}
 
-		// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
-		rr := httptest.NewRecorder()
+	for _, td := range testData {
+		t.Run(td.name, func(t *testing.T) {
+			// Create a request to pass to our handler. We don't have any query parameters for now, so we'll
+			// pass 'nil' as the third parameter.
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/movies/%s", td.id), nil)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
-		// directly and pass in our Request and ResponseRecorder.
-		handler.ServeHTTP(rr, req)
+			// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+			rr := httptest.NewRecorder()
 
-		// Check the status code is what we expect.
-		if status := rr.Code; status != http.StatusOK {
-			t.Errorf("handler returned wrong status code: got %v want %v",
-				status, http.StatusOK)
-		}
-	})
+			// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
+			// directly and pass in our Request and ResponseRecorder.
+			handler.ServeHTTP(rr, req)
 
-	t.Run("invalid_id", func(t *testing.T) {
-		// Create a request to pass to our handler.
-		req, err := http.NewRequest(http.MethodGet, "/api/v1/movies/blah", nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
-		rr := httptest.NewRecorder()
-
-		// Our handlers satisfy http.Handler, so we can call their ServeHTTP method
-		// directly and pass in our Request and ResponseRecorder.
-		handler.ServeHTTP(rr, req)
-
-		// Check the status code is what we expect.
-		if status := rr.Code; status != http.StatusNotFound {
-			t.Errorf("handler returned wrong status code: got %v want %v",
-				status, http.StatusNotFound)
-		}
-	})
+			// Check the status code is what we expect.
+			if status := rr.Code; status != td.expectedStatusCode {
+				t.Errorf("handler returned wrong status code: got %v want %v",
+					status, td.expectedStatusCode)
+			}
+		})
+	}
 }
