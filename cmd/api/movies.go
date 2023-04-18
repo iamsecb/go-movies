@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/haani-niyaz/go-movies/internal/data"
+	"github.com/haani-niyaz/go-movies/internal/validator"
 )
 
 // Add a createMovieHandler for the "POST api/v1/movies" endpoint. For now we simply
@@ -38,6 +39,25 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 	err := app.readJSON(w, r, &input)
 	if err != nil {
 		app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+
+		return
+	}
+
+	// Copy the values from the input struct to a new Movie struct.
+	// We copy because the client could provid the "id" and "version" which we
+	// don't want.
+	m := data.Movie{
+		Title:   input.Title,
+		Year:    input.Year,
+		Runtime: input.Runtime,
+		Genres:  input.Genres,
+	}
+
+	v := validator.New()
+	m.Validate(v)
+
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Error)
 
 		return
 	}
