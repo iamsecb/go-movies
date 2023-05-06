@@ -33,6 +33,8 @@ When working with a message queue, you may still use `json.Decoder` to decode JS
 
 1. **Triage errors**
 
+	It is beneficial to the caller if errors are triaged to make it more sensible in cases where third party calls are made and multiple forms of errors or difficult to decipher errors are returned.
+
 2. **Consistency by helpers**
 
 	Create helpers to ensure the same endpoint is being used so that if the app becomes more complex it can be changed in one place. This decision does not have to be made pre-emptively but when you see a pattern emerging move the
